@@ -1,0 +1,119 @@
+#*******************************************************************************
+# Build system configuration file template.  Copy this to make.inc in this
+# directory and modify as needed.  The current configuration should work for a
+# standard GNU/Linux system with standard build tools.
+#*******************************************************************************
+
+
+#*******************************************************************************
+# Compiler and linker settings
+#*******************************************************************************
+CC            = gcc
+CXX           = g++
+F77           = gfortran
+F90           = gfortran
+
+CCFLAGS       = -O2 -fPIC -Wall -Wno-cpp -Wno-misleading-indentation \
+                -Wno-uninitialized -Wno-unused-function -fno-strict-aliasing \
+                -fopenmp
+CXXFLAGS      = $(CCFLAGS) -Wno-terminate
+F77FLAGS      = -O2 -fPIC -Wall -Wno-uninitialized -fno-second-underscore \
+                -ffixed-line-length-none
+F90FLAGS      = -O2 -fPIC -Wall -Wno-uninitialized -fno-second-underscore \
+                -ffree-line-length-0
+
+# Link program that should be used for a mixed C/Fortran
+CFMIX_LD      = $(F90)
+CFMIX_LDFLAGS = -fopenmp
+
+
+#*******************************************************************************
+# Defaults.  Do not modify.
+#*******************************************************************************
+VERSION       = 0.93
+
+CCDEFINES     = -D'VERSION="$(VERSION)"'
+INCDIRS       = -I../src -I../interfaces -I../misc
+LIBDIRS       =
+LINKS         = -Wl,--start-group
+
+
+#*******************************************************************************
+# BLAS and LAPACK settings.  This includes whatever needs to be on the command
+# line to link to your BLAS and LAPACK.  If these are installed in standard
+# places (/usr/include, /usr/lib) then these variable definitions may be left
+# blank.
+#*******************************************************************************
+# Reference BLAS LAPACK
+#LINKS        += $(HOME)/opt/lapack/liblapack.a
+#LINKS        += ${HOME}/opt/lapack/libblas.a
+
+# OpenBLAS (has LAPACK)
+LINKS        += /usr/lib/x86_64-linux-gnu/libopenblas.a
+
+
+#*******************************************************************************
+# Uncomment (and modify include path as needed) to compile the IDL interface
+#*******************************************************************************
+#make_int_idl  = 1
+#INCDIRS      += -I${HOME}/opt/exelis/idl/external
+
+
+#*******************************************************************************
+# Uncomment (and modify include path as needed) to compile the Python interface
+#*******************************************************************************
+make_int_python = 1
+INCDIRS        += -I${HOME}/miniconda3/include/python3.11/ \
+                  -I${HOME}/miniconda3/envs/mpl/lib/python3.11/site-packages/numpy/core/include/
+
+#*******************************************************************************
+# Leave next line commented unless you know what it does.
+#*******************************************************************************
+#make_dev_build = 1
+
+ifdef make_dev_build
+
+CCDEFINES     += -DDEBUG_BUILD
+CCDEFINES     += -DINCLUDE_DEV_SOURCE
+CCDEFINES     += -DHAVE_EISPACK_LIBRARY
+CCDEFINES     += -DHAVE_FORTRAN_COMPILER
+
+# FFTW
+CCDEFINES     += -DFFTW_FLAG
+
+# FFTW if it is in an unstandard place
+INCDIRS       += -I${HOME}/opt/fftw/include
+LIBDIRS       += -L${HOME}/opt/fftw/lib
+LINKS         += -lfftw3
+
+# LINPACK
+LINKS         += ${HOME}/rt/linpack/liblinpack.a
+
+# Eispack
+LINKS         += ${HOME}/rt/eispack/libeispack.a
+
+# External solvers (for validation)
+
+INCDIRS       += -I${HOME}/rt/2stream \
+                 -I${HOME}/rt/lidort/includes \
+                 -I${HOME}/rt/RTS_LIDORT3p8p1_f90pack_05May20/mod \
+                 -I${HOME}/rt/ms3/mod \
+                 -I${HOME}/rt/radiant.ss \
+                 -I${HOME}/rt/vlidort/includes
+LINKS         += ${HOME}/rt/disort_grm/libdisort.a \
+                 ${HOME}/rt/2stream/lib2stream.a \
+                 ${HOME}/rt/lidort/sourcecode/liblidort.a \
+                 ${HOME}/rt/RTS_LIDORT3p8p1_f90pack_05May20/liblidort.a \
+                 ${HOME}/rt/ms3/src/libms3.a \
+                 ${HOME}/rt/polrad/libpolrad.a \
+                 ${HOME}/rt/radiant.ss/libradiant.a \
+                 ${HOME}/rt/evans/PolRadTran_grm/libradtran.a \
+                 ${HOME}/rt/twostr/libtwostr.a \
+                 ${HOME}/rt/vlidort/sourcecode/libvlidort.a
+endif
+
+
+#*******************************************************************************
+# Defaults.  Do not modify.
+#*******************************************************************************
+LINKS        += -Wl,--end-group
